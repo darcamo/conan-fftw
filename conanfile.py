@@ -34,17 +34,30 @@ conan_basic_setup()''')
         os.mkdir("build")
         shutil.move("conanbuildinfo.cmake", "build/")
         cmake = CMake(self)
+
+        cmake.definitions["BUILD_TESTS"] = "OFF"
+        # cmake.definitions["ENABLE_THREADS"] = True  # Use pthread for multithreading
+
+        # cmake.definitions["ENABLE_FLOAT"] = "ON"  # single-precision
+        # cmake.definitions["ENABLE_LONG_DOUBLE"] = "ON"  # long-double precision
+        # cmake.definitions["ENABLE_QUAD_PRECISION"] = "ON"  # quadruple-precision
+
+        # cmake.definitions["ENABLE_SSE"] = True  # Compile with SSE instruction set support
+        # cmake.definitions["ENABLE_SSE2"] = True # Compile with SSE2 instruction set support
+        # cmake.definitions["ENABLE_AVX"] = True  # Compile with AVX instruction set support
+        # cmake.definitions["ENABLE_AVX2"] = True # Compile with AVX2 instruction set support
+
         cmake.configure(source_folder="sources", build_folder="build")
         cmake.build()
         cmake.install()
 
-    def package(self):
-        self.copy("*.h", dst="include", src="hello")
-        self.copy("*hello.lib", dst="lib", keep_path=False)
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
-        self.copy("*.dylib", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
+    # def package(self):
+    #     self.copy("*.h", dst="include", src="hello")
+    #     self.copy("*hello.lib", dst="lib", keep_path=False)
+    #     self.copy("*.dll", dst="bin", keep_path=False)
+    #     self.copy("*.so", dst="lib", keep_path=False)
+    #     self.copy("*.dylib", dst="lib", keep_path=False)
+    #     self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libdirs = ["lib64", "lib"]
