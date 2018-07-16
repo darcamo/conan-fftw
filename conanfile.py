@@ -31,12 +31,17 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
 
     def build(self):
+        # Note that fftw library can build only one precision at a time. That
+        # is way we need multiple cmake configure/build/install calls, each
+        # with different definitions.
         os.mkdir("build")
         shutil.move("conanbuildinfo.cmake", "build/")
         cmake = CMake(self)
 
+        cmake.definitions["BUILD_SHARED_LIBS"] = True
         cmake.definitions["BUILD_TESTS"] = "OFF"
-        # cmake.definitions["ENABLE_THREADS"] = True  # Use pthread for multithreading
+        cmake.definitions["ENABLE_THREADS"] = True  # Use pthread for multithreading
+        cmake.definitions["ENABLE_OPENMP"] = True
 
         # cmake.definitions["ENABLE_FLOAT"] = "ON"  # single-precision
         # cmake.definitions["ENABLE_LONG_DOUBLE"] = "ON"  # long-double precision
@@ -51,13 +56,23 @@ conan_basic_setup()''')
         cmake.build()
         cmake.install()
 
-    # def package(self):
-    #     self.copy("*.h", dst="include", src="hello")
-    #     self.copy("*hello.lib", dst="lib", keep_path=False)
-    #     self.copy("*.dll", dst="bin", keep_path=False)
-    #     self.copy("*.so", dst="lib", keep_path=False)
-    #     self.copy("*.dylib", dst="lib", keep_path=False)
-    #     self.copy("*.a", dst="lib", keep_path=False)
+        cmake.definitions["ENABLE_FLOAT"] = "ON"  # single-precision
+        cmake.configure(source_folder="sources", build_folder="build")
+        cmake.build()
+        cmake.install()
+
+        cmake.definitions["ENABLE_FLOAT"] = "OFF"  # single-precision
+        cmake.definitions["ENABLE_LONG_DOUBLE"] = "ON"  # long-double precision
+        cmake.configure(source_folder="sources", build_folder="build")
+        cmake.build()
+        cmake.install()
+
+        cmake.definitions["ENABLE_FLOAT"] = "OFF"  # single-precision
+        cmake.definitions["ENABLE_LONG_DOUBLE"] = "OFF"  # long-double precision
+        cmake.definitions["ENABLE_QUAD_PRECISION"] = "ON"  # quadruple-precision
+        cmake.configure(source_folder="sources", build_folder="build")
+        cmake.build()
+        cmake.install()
 
     def package_info(self):
         self.cpp_info.libdirs = ["lib64", "lib"]
